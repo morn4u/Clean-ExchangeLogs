@@ -3,10 +3,10 @@ $Days = 14
 
 # Path of the logs that you like to cleanup
 $IISLogPath = "C:\inetpub\logs\LogFiles\"
-$ExchangeLoggingPath = "C:\Program Files\Microsoft\Exchange Server\V15\Logging\"
-$ETLLoggingPath = "C:\Program Files\Microsoft\Exchange Server\V15\Bin\Search\Ceres\Diagnostics\ETLTraces\"
-$ETLLoggingPath2 = "C:\Program Files\Microsoft\Exchange Server\V15\Bin\Search\Ceres\Diagnostics\Logs\"
-$UnifiedContentPath = "C:\Program Files\Microsoft\Exchange Server\V15\TransportRoles\data\Temp\UnifiedContent"
+$ExchangeLoggingPath = "$($env:ExchangeInstallPath)Logging\"
+$ETLLoggingPath = "$($env:ExchangeInstallPath)Bin\Search\Ceres\Diagnostics\ETLTraces\"
+$ETLLoggingPath2 = "$($env:ExchangeInstallPath)Bin\Search\Ceres\Diagnostics\Logs\"
+$UnifiedContentPath = "$($env:ExchangeInstallPath)TransportRoles\data\Temp\UnifiedContent"
 
 # Test if evelated Shell
 Function Confirm-Administrator {
@@ -31,7 +31,7 @@ Function Get-LogfileSize ($TargetFolder) {
     if (Test-Path $TargetFolder) {
         $Now = Get-Date
         $LastWrite = $Now.AddDays(-$days)
-        $Files = Get-ChildItem $TargetFolder -Recurse | Where-Object { $_.Name -like "*.log" -or $_.Name -like "*.blg" -or $_.Name -like "*.etl" } | Where-Object { $_.lastWriteTime -le "$lastwrite" }
+        $Files = Get-ChildItem -Path $TargetFolder -Recurse -Include "*.log", "*.blg", "*.etl" | Where-Object { $_.lastWriteTime -le "$lastwrite" }
         $SizeGB = ($Files | Measure-Object -Sum Length).Sum / 1GB
         $SizeGBRounded = [math]::Round($SizeGB,2)
         return $SizeGBRounded
@@ -60,7 +60,7 @@ Function Remove-Logfiles ($TargetFolder) {
     if (Test-Path $TargetFolder) {
         $Now = Get-Date
         $LastWrite = $Now.AddDays(-$days)
-        $Files = Get-ChildItem $TargetFolder -Recurse | Where-Object { $_.Name -like "*.log" -or $_.Name -like "*.blg" -or $_.Name -like "*.etl" } | Where-Object { $_.lastWriteTime -le "$lastwrite" }
+        $Files = Get-ChildItem -Path $TargetFolder -Recurse -Include "*.log", "*.blg", "*.etl" | Where-Object { $_.lastWriteTime -le "$lastwrite" }
         $FileCount = $Files.Count
         $Files | Remove-Item -force -ea 0
         return $FileCount
